@@ -1,0 +1,14 @@
+---
+mysql_database: semaphore
+mysql_hostname: localhost
+mysql_username: semaphore
+mysql_password: semaphore
+mysql_port: 3306
+playbook_path: /home/ansible/semaphore
+semaphore_bin_path: /usr/bin/semaphore
+web_root:
+admin_username: admin
+admin_email: corystein@gmail.com
+admin_desc: "Cory Stein"
+admin_password: Sem@phore1234!
+semaphore_rpm: https://github.com/ansible-semaphore/semaphore/releases/download/v2.5.1/semaphore_2.5.1_linux_amd64.rpm

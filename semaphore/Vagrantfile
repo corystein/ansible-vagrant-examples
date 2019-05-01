@@ -1,0 +1,38 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+system("
+    if [ #{ARGV[0]} = 'up' ]; then
+        echo 'You are doing vagrant up and can execute your script'
+        ansible-galaxy install -c -r requirements.yml
+    fi
+")
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "geerlingguy/centos7"
+  config.ssh.insert_key = false
+  config.vm.box_download_insecure = true
+
+  config.vm.provider :virtualbox do |v|
+    v.memory = 4096
+    v.cpus = 2
+    v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    v.customize ["modifyvm", :id, "--ioapic", "on"]
+  end
+
+  # AWX VM.
+  config.vm.define "semaphore" do |semaphore|
+    semaphore.vm.hostname = "semaphore.local"
+    semaphore.vm.network :private_network, ip: "192.168.1.100"
+
+    semaphore.vm.provision :ansible do |ansible|
+      ansible.compatibility_mode = "2.0"
+      ansible.playbook = "ansible/main.yml"
+      ansible.inventory_path = "ansible/inventory"
+      ansible.become = true
+    end
+  end
+
+end
