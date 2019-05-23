@@ -6,4 +6,9 @@
 
 # Ansible.
 *.retry
+*/ansible/roles/*
 */roles/*
+*/ansible/roles/*
+
+# Log Files
+*.log

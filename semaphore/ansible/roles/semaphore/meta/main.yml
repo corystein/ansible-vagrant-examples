@@ -3,8 +3,8 @@ dependencies: []
 
 galaxy_info:
   author: corystein
-  description: EPEL repository for RHEL/CentOS.
-  company: "Midwestern Mac, LLC"
+  description: Semaphore repository for RHEL/CentOS.
+  company: ""
   license: "license (BSD, MIT)"
   min_ansible_version: 2.1
   platforms:
@@ -14,7 +14,4 @@ galaxy_info:
         - 6
         - 7
   galaxy_tags:
-    - packaging
-    - epel
-    - repository
-    - repo
+    - tools

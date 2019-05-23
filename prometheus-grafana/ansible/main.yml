@@ -1,0 +1,33 @@
+---
+# Ansible playbook for an AWX server.
+#
+# @author Jeff Geerling (2017).
+
+- name: Install Prometheus
+  hosts: all
+  become: yes
+  vars:
+
+  pre_tasks:
+    - name: Install epel-release for dependent package installation
+      yum:
+        name: epel-release
+        enablerepo: "extras"
+        state: present
+
+    - name: Install python-pip
+      yum:
+        name: "python-pip"
+        state: present
+
+    - name: Install python packages
+      pip:
+        name:
+          - jmespath
+        state: present
+
+  roles:
+    - geerlingguy.repo-epel
+    - cloudalchemy.prometheus
+  tags:
+    - prometheus

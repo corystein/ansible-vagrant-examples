@@ -22,10 +22,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 
+  config.vm.network "forwarded_port", guest: 80, host: 8080,
+    auto_correct: true
+    config.vm.network "forwarded_port", guest: 443, host: 8443,
+    auto_correct: true  
+
   # AWX VM.
   config.vm.define "semaphore" do |semaphore|
     semaphore.vm.hostname = "semaphore.local"
-    semaphore.vm.network :private_network, ip: "192.168.1.100"
+    semaphore.vm.network :private_network, ip: "192.168.6.66"
 
     semaphore.vm.provision :ansible do |ansible|
       ansible.compatibility_mode = "2.0"

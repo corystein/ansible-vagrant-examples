@@ -1,1 +1,1 @@
-semaphore ansible_ssh_host=192.168.1.100 ansible_ssh_port=22
+semaphore ansible_ssh_host=192.168.6.66 ansible_ssh_port=22
