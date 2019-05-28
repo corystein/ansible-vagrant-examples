@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+system("
+    if [ #{ARGV[0]} = 'up' ]; then
+        echo 'You are doing vagrant up and can execute your script'
+        ansible-galaxy install -c -r requirements.yml
+    fi
+")
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "geerlingguy/centos7"
+  config.ssh.insert_key = false
+  config.vm.box_download_insecure = true
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+  config.vm.network "forwarded_port", guest: 9090, host: 9090
+  #config.vm.network "forwarded_port", guest: 3000, host: 3000
+
+  config.vm.provider :virtualbox do |v|
+    v.memory = 4096
+    v.cpus = 2
+    #v.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    v.customize ["modifyvm", :id, "--ioapic", "on"]
+  end
+
+  #Deploy VM scripts
+  config.vm.define "vm" do |prometheus|
+    prometheus.vm.hostname = "prometheus.local"
+    prometheus.vm.network :private_network, ip: "192.168.6.65"
+
+    prometheus.vm.provision :ansible do |ansible|
+      ansible.compatibility_mode = "2.0"
+      ansible.playbook = "provisioning/playbook.yml"
+      ansible.inventory_path = "provisioning/inventory"
+      ansible.become = true
+    end
+  end
+
+end

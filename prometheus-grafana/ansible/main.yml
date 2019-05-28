@@ -1,0 +1,17 @@
+---
+# Ansible playbook for an Prometheus server.
+#
+# @author Cory Stein (2019).
+
+- name: Install Prometheus
+  hosts: all
+  gather_facts: no
+  become: yes
+  vars:
+  pre_tasks:
+
+  roles:
+    #- geerlingguy.repo-epel
+    - cloudalchemy.prometheus
+  tags:
+    - prometheus

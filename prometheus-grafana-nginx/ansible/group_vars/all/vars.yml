@@ -1,0 +1,47 @@
+CN: prg-test.local
+cert_csr_file: /tmp/server-csr.pem
+cert_key_file: /tmp/server-key.pem
+cert_file: /tmp/server-crt.pem
+
+prometheus_web_external_url: "http://{{ ansible_host }}:9090"
+prometheus_alertmanager_config:
+  - scheme: http
+    static_configs:
+      - targets: ["127.0.0.1:9093"]
+
+#prometheus_scrape_configs:
+
+grafana_security:
+  admin_user: admin
+  admin_password: "P@ssword1234!"
+
+# nginx_vhost:
+#   - server_name: "{{ CN }}"
+#     listen_on: "*.443"
+#     ssl_enabled: true
+#     state: present
+#     filename: "prometheus.conf"
+#     extra_parameters: |
+#       location / {
+#         proxy_pass http://127.0.0.1:9090
+#       }
+#       ssl_certificate     {{ cert_file }}
+#       ssl_certificate_key {{ cert_key_file }};
+#       ssl_protocols       TLSv1.1 TLSv1.2;
+#       ssl_ciphers         HIGH:!aNULL:!MD5;
+
+nginx_vhosts:
+  - listen: "443 ssl"
+    server_name: "{{ CN }} 127.0.0.1"
+    ssl_enabled: true
+    filename: "prometheus.conf"
+    extra_parameters: |
+      location / {
+        proxy_pass http://127.0.0.1:9090;
+      }
+
+      ssl_certificate     {{ cert_file }};
+      ssl_certificate_key {{ cert_key_file }};
+      ssl_protocols       TLSv1.1 TLSv1.2;
+      ssl_ciphers         HIGH:!aNULL:!MD5;
+    state: present

@@ -1,0 +1,36 @@
+---
+# Ansible playbook for an Prometheus server.
+#
+# @author Cory Stein (2019).
+
+- hosts: all
+  gather_facts: no
+  become: yes
+
+  pre_tasks:
+    - name: Install gnu-tar (MacOS)
+      homebrew:
+        name: gnu-tar
+        state: present
+      when: ansible_os_family == 'MacOSX'
+
+- hosts: all
+  roles:
+    - cloudalchemy.node-exporter
+  tags:
+    - node_exporter
+
+- hosts: prometheus
+  roles:
+    - cloudalchemy.blackbox-exporter
+    - cloudalchemy.snmp-exporter
+    - cloudalchemy.prometheus
+    - cloudalchemy.alertmanager
+  tags:
+    - prometheus
+
+- hosts: grafana
+  roles:
+    - cloudalchemy.grafana
+  tags:
+    - grafana

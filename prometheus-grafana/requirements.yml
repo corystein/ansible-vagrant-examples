@@ -1,0 +1,9 @@
+---
+- src: geerlingguy.repo-epel
+- src: cloudalchemy.prometheus
+#- src: cloudalchemy.blackbox-exporter
+#- src: cloudalchemy.snmp-exporter
+#- src: cloudalchemy.alertmanager
+#- src: cloudalchemy.node-exporter
+#- src: cloudalchemy.grafana
+#- src: geerlingguy.nginx
