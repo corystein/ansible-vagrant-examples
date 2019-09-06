@@ -5,4 +5,4 @@
   vars:
   tasks:
     - name: Test shell
-      shell: echo "Test Shell"
+      win_shell: Write-Host "Hello"
