@@ -1,0 +1,19 @@
+---
+# Ansible playbook for an vault server.
+#
+# @author Cory Stein (2019).
+
+- name: Deploy Vault
+  hosts: all
+  gather_facts: yes
+  become: yes
+  pre_tasks:
+    - name: Install Dependencies
+      yum:
+        name:
+          - unzip
+          - gzip
+        state: present
+  tasks:
+    - name: Install Vault
+      include_tasks: 01-Install-Vault.yml

@@ -1,0 +1,58 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+#system("
+#    if [ #{ARGV[0]} = 'up' ]; then
+#        echo 'You are doing vagrant up and can execute your script'
+#        ansible-galaxy install -c -r requirements.yml
+#    fi
+#")
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+    config.vm.box = "mwrock/Windows2016"
+    config.vm.box_download_insecure = true
+
+    #config.vm.network "private_network", type: "dhcp"
+
+    config.vm.provider :virtualbox do |v|
+      v.gui = false
+      v.memory = 4096
+      v.cpus = 2
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--ioapic", "on"]
+    end
+
+    config.vm.guest = :windows
+    config.vm.communicator = "winrm"
+    config.vm.boot_timeout = 600
+    config.vm.graceful_halt_timeout = 600
+
+    # Create a forwarded port mapping which allows access to a specific port
+    # within the machine from a port on the host machine.
+    #config.vm.network :forwarded_port, guest: 3389, host: 3389, id: "msrdp", auto_correct: true
+    config.vm.network :forwarded_port, guest: 5985, host: 5985, id: "winrm", auto_correct: true
+    config.vm.network :forwarded_port, guest: 22, host: 2222, id: "ssh"
+
+    #config.vm.define "vm1" do |vm1|
+    #    vm1.vm.network "private_network", ip: "192.168.100.10"
+    #end
+
+    config.vm.provision "shell", path:"scripts/ConfigureRemotingForAnsible.ps1"
+    #config.vm.provision "shell", path:"scripts/create-ansible-user.ps1"
+    config.vm.provision "shell", path:"scripts/install-openssh.ps1"
+
+    #vagrant_root = File.dirname(__FILE__)
+    #ENV['ANSIBLE_ROLES_PATH'] = "#{vagrant_root}/ansible/roles"
+
+    #config.vm.communicator = "ssh"
+
+    config.vm.provision :ansible do |ansible|
+        ansible.compatibility_mode = "2.0"
+        ansible.limit = "all"
+        ansible.playbook = "ansible/main.yml"
+        ansible.inventory_path = "ansible/inventory"
+        ansible.become = true
+    end
+end

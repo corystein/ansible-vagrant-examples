@@ -1,0 +1,8 @@
+---
+- hosts: all
+  gather_facts: yes
+  #become: yes
+  vars:
+  tasks:
+    - name: Test shell
+      shell: echo "Test Shell"

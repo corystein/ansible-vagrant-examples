@@ -71,10 +71,3 @@
     - geerlingguy.nginx
   tags:
     - nginx
-  # tasks:
-  #   - debug:
-  #       msg: "{{lookup('file', '/etc/nginx/conf.d/prometheus.conf') }}"
-  # - name: display multiple file contents
-  #   debug: var=item
-  #   with_file:
-  #     - "/etc/nginx/conf.d/default.conf"

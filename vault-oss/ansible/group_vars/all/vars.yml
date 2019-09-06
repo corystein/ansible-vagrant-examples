@@ -1,0 +1,10 @@
+vault_uri: https://releases.hashicorp.com/vault/
+vault_version: 1.2.1
+vault_config_file: /opt/vault/vault.hcl
+vault_service_file: /etc/systemd/system/vault.service
+vault_address: http://127.0.0.1
+vault_ip: 127.0.0.1
+vault_port: 8200
+vault_fqdn: localhost
+vault_base_path: /data
+vault_data_path: "{{ vault_base_path }}/data/vault"

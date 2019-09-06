@@ -1,0 +1,41 @@
+---
+# Ansible playbook for an vault server.
+#
+# @author Cory Stein (2019).
+
+- name: Deploy Vault
+  hosts: all
+  gather_facts: yes
+  become: yes
+  vars:
+    vault_version: 1.1.3
+  tasks:
+    - name: Check Vault Version
+      shell: "vault --version | head -n1 | grep {{ vault_version }}"
+      failed_when: false
+      changed_when: false
+      register: current_vault_version
+
+    - name: Display Version
+      debug:
+        msg: "{{ current_vault_version.stdout }}"
+      when: current_vault_version.stdout != ""
+
+    #- name: Download Vault
+    #  get_url:
+    #    url: "https:/releases.hashicorp.com/vault/{{ vault_version}}/vault_{{ vault_version }}_linux_amd64.zip"
+    #    dest: /tmp/vault.zip
+
+    - name: Check Hashi URI
+      uri:
+        url: https:/releases.hashicorp.com/
+        method: GET
+
+    - name: Install Vault
+      unarchive:
+        src: https:/releases.hashicorp.com/vault/{{ vault_version}}/vault_{{ vault_version }}_linux_amd64.zip
+        dest: /usr/bin
+        remote_src: true
+  #roles:
+  #  - geerlingguy.repo-epel
+  #  - brianshumate.vault

@@ -15,19 +15,7 @@ Read more about Ansible and how I use it to manage infrastructure in [Ansible fo
 - **Drupal** (`drupal` - LAMP/LEMP-based Content Management System)
 - **ELK** (`elk` - Log monitoring (Elasticsearch, Logstash, Kibana) and forwarding (Logstash forwarder))
 - **GitLab** (`gitlab` - Ruby-based GitHub-like Git web interface)
-- **GlusterFS** (`gluster` - A robust distributed filesystem)
-- **Gogs** (`gogs` - Go-based GitHub-like Git web interface)
-- **Jenkins** (`jenkins` - Java-based Continuous Integration server)
-- **LAMP** (`lamp` - Linux, Apache, MySQL, and PHP)
-- **LEMP** (`lemp` - Linux Nginx, MySQL, and PHP-fpm)
-- **Munin** (`munin` - Munin and munin-node monitoring server)
-- **Node.js** (`nodejs` - Node.js-based API app using restify)
-- **Phergie** (`phergie` - PHP IRC Bot)
-- **Rails** (`rails` - Ruby on Rails demo app running on Passenger/Nginx)
-- **Apache Solr** (`solr` - Java-based text search service)
-- **SonarQube** (`sonarqube` - Java-based code quality analysis and review tool)
-- **SVN** (`svn` - An SVN server using Apache for a web interface)
-- **Svn2Git** (`svn2git` - A VM which includes KDE's Svn2Git for repository conversions)
+- **Vault-Enterprise** (`vault-enterprise` - HashiCorp Vault Enterprise server
 
 ## License
 

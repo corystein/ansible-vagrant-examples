@@ -1,0 +1,48 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+system("
+    if [ #{ARGV[0]} = 'up' ]; then
+        echo 'You are doing vagrant up and can execute your script'
+        ansible-galaxy install -c -r requirements.yml
+    fi
+")
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "geerlingguy/centos7"
+  config.ssh.insert_key = false
+  config.vm.box_download_insecure = true
+
+
+  #config.vm.network "private_network", type: "dhcp"
+  #config.vm.network "public_network"
+  #config.vm.network "public_network", bridge: "en0: Wi-Fi (AirPort)"
+  #config.vm.network "public_network", :bridge => "eth0", auto_config: true
+
+  config.vm.network "forwarded_port", guest: 8200, host: 8200
+  #config.vm.network "forwarded_port", guest: 443, host: 443
+
+  config.vm.network "private_network", type: "dhcp"
+
+  config.vm.provider :virtualbox do |v|
+    v.memory = 4096
+    v.cpus = 2
+    v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    v.customize ["modifyvm", :id, "--ioapic", "on"]
+  end
+
+  # Provisioning configuration for Ansible.
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.limit = "all"
+    ansible.playbook = "ansible/main.yml"
+    ansible.inventory_path = "ansible/inventory"
+    ansible.become = true
+
+    #ansible.playbook = "playbook.yml"
+    #ansible.sudo = true
+   end	
+
+end

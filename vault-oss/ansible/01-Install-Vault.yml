@@ -1,0 +1,214 @@
+---
+- name: Create /install directory if not exists
+  file:
+    path: /install
+    state: directory
+
+- name: Check Vault Version
+  shell: "vault --version | head -n1 | grep {{ vault_version }}"
+  failed_when: false
+  changed_when: false
+  register: current_vault_version
+
+- name: Display Version
+  debug:
+    msg: "{{ current_vault_version.stdout }}"
+  when: current_vault_version.stdout != ""
+
+- name: Check Hashi URI
+  uri:
+    url: "{{ vault_uri }}"
+
+- name: Create vault /usr/bin/vault_{{ vault_version }} directory if not exists
+  file:
+    path: /usr/bin/vault_{{ vault_version }}
+    state: directory
+    mode: 0755
+
+- name: Install Vault (Download/Extract)
+  unarchive:
+    src: "{{ vault_uri }}{{ vault_version}}/vault_{{ vault_version }}_linux_amd64.zip"
+    dest: /usr/bin/vault_{{ vault_version }}
+    remote_src: true
+
+- name: Create a symbolic link for Vault
+  file:
+    src: /usr/bin/vault_{{ vault_version }}/vault
+    dest: /usr/bin/vault
+    state: link
+
+- name: Check Vault Version
+  shell: "vault --version | head -n1 | grep {{ vault_version }}"
+  failed_when: false
+  changed_when: false
+  register: current_vault_version
+
+- name: Display Version
+  debug:
+    msg: "{{ current_vault_version.stdout }}"
+  when: current_vault_version.stdout != ""
+
+- name: Add the user "vault"
+  user:
+    name: vault
+    comment: Vault service account
+    system: yes
+    shell: /bin/false
+    home: /etc/vault.d
+
+- name: Change file [/usr/bin/vault] ownership, group and permission
+  file:
+    path: /usr/bin/vault
+    owner: root
+    group: root
+
+- name: Create vault /data/vault directory if not exists
+  file:
+    path: "{{ vault_data_path }}"
+    state: directory
+
+- name: Create vault /opt/vault directory if not exists
+  file:
+    path: /opt/vault
+    state: directory
+
+- name: Create Vault config file
+  shell:
+    cmd: |
+      cat << EOF > "{{ vault_config_file }}"
+      storage "file" {
+        path = {{ vault_data_path }}
+      }
+
+      listener "tcp" {
+        address = "{{ vault_address }}:{{ vault_port }}"
+        tls_disable = 1
+        tls_min_version = "tls12"
+      }
+
+      ui = true
+
+      #disable_mlock = true
+      EOF
+  args:
+    creates: "{{ vault_config_file }}"
+
+- name: Set mlock
+  shell:
+    cmd: |
+      setcap cap_ipc_lock=+ep /usr/bin/vault
+      echo "success" > /install/vault_mlock
+  args:
+    creates: /install/vault_mock
+
+- name: Create Vault systemd file
+  shell:
+    cmd: |
+      cat << EOF > "{{ vault_service_file }}"
+      [Unit]
+      Description="HashiCorp Vault - A tool for managing secrets"
+      Documentation=https://www.vaultproject.io/docs/
+      Requires=network-online.target
+      After=network-online.target
+      ConditionFileNotEmpty={{ vault_config_file }}
+
+      [Service]
+      User=vault
+      Group=vault
+      ProtectSystem=full
+      ProtectHome=read-only
+      PrivateTmp=yes
+      PrivateDevices=yes
+      SecureBits=keep-caps
+      AmbientCapabilities=CAP_IPC_LOCK
+      Capabilities=CAP_IPC_LOCK+ep
+      CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
+      NoNewPrivileges=yes
+      #Environment=VAULT_ADDR=http://127.0.0.1:8200 # Uncomment to automatically unseal at startup
+      #Environment=UNSEAL_KEY  # Uncomment to automatically unseal at startup
+      ExecStart=/usr/bin/vault server -config={{ vault_config_file }}
+      ExecReload=/bin/kill --signal HUP $MAINPID
+      KillMode=process
+      KillSignal=SIGINT
+      Restart=on-failure
+      RestartSec=5
+      TimeoutStopSec=30
+      StartLimitIntervalSec=60
+      StartLimitBurst=3
+      LimitNOFILE=65536
+
+      [Install]
+      WantedBy=multi-user.target
+      EOF
+  args:
+    creates: "{{ vault_service_file }}"
+
+- name: Disable firewalld
+  systemd:
+    name: firewalld
+    enabled: no
+    state: stopped
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Check Vault init state
+  shell: |
+    vault status -format json;
+  environment:
+    VAULT_ADDR: "{{ vault_address }}:{{ vault_port }}"
+  ignore_errors: yes
+  register: vault_init_state
+
+- name: Parse init state
+  set_fact:
+    vault_init_state_parsed: "{{ vault_init_state.stdout | from_json }}"
+
+- name: Initialize Vault
+  shell: |
+    vault operator init -key-shares=1 -key-threshold=1 format json;
+    echo "success" > /opt/vault/init_complete
+  args:
+    creates: /opt/vault/init_complete
+  environment:
+    VAULT_ADDR: "{{ vault_address }}:{{ vault_port }}"
+  register: vault_init_results
+  when: not vault_init_state_parsed.initialized
+
+- name: Vault Init results
+  debug:
+    msg: "{{ vault_init_results }}"
+  when: not vault_init_state_parsed.initialized
+
+- name: Paree output of Vault Init output from json
+  set_fact:
+    vault_init_parsed: "{{ vault_init_results.stdout | from_json }}"
+  when: not vault_init_state_parsed.initialized
+
+- name: Set facts for unseal and root keys
+  set_fact:
+    unseal_key: "{{ vault_init_parsed.unseal_keys_b64[0] }}"
+    root_token: "{{ vault_init_parsed.root_token }}"
+  when: not vault_init_state_parsed.initialized
+
+- name: Print keys
+  debug:
+    msg:
+      - "unseal_key: {{ unseal_key }}"
+      - "root_token: {{ root_token }}"
+  when: not vault_init_state_parsed.initialized
+
+- name: Create root token file
+  lineinfile:
+    path: "/opt/vault/rootkey.txt"
+    line: "root_token: {{ root_token }}"
+    create: yes
+  when: not vault_init_state_parsed.initialized
+
+- name: Enable Vault Service
+  systemd:
+    name: vault.service
+    state: started
+    enabled: true
+    daemon_reload: true

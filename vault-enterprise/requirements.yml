@@ -1,0 +1,4 @@
+---
+- src: geerlingguy.repo-epel
+- src: geerlingguy.git
+- src: brianshumate.vault
