@@ -1,5 +1,1 @@
-#semaphore ansible_ssh_host=192.168.1.100 ansible_ssh_port=22
-
-#192.168.100.10 ansible_ssh_port=2322 ansible_connection=ssh
-
 127.0.0.1 ansible_ssh_port=2222 ansible_connection=ssh ansible_shell_type=powershell ansible_password=vagrant

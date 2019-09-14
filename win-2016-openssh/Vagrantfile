@@ -39,20 +39,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #    vm1.vm.network "private_network", ip: "192.168.100.10"
     #end
 
-    config.vm.provision "shell", path:"scripts/ConfigureRemotingForAnsible.ps1"
+    #config.vm.provision "shell", path:"scripts/ConfigureRemotingForAnsible.ps1"
     #config.vm.provision "shell", path:"scripts/create-ansible-user.ps1"
     config.vm.provision "shell", path:"scripts/install-openssh.ps1"
-
-    #vagrant_root = File.dirname(__FILE__)
-    #ENV['ANSIBLE_ROLES_PATH'] = "#{vagrant_root}/ansible/roles"
-
-    #config.vm.communicator = "ssh"
 
     config.vm.provision :ansible do |ansible|
         ansible.compatibility_mode = "2.0"
         ansible.limit = "all"
         ansible.playbook = "ansible/main.yml"
         ansible.inventory_path = "ansible/inventory"
-        ansible.become = true
+        #ansible.become = true
     end
 end

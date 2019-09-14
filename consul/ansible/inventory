@@ -1,0 +1,18 @@
+[consul:children]
+consul-servers
+consul-clients
+
+[consul-servers]
+machine1 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2201 ansible_ssh_user=vagrant ansible_password=vagrant
+
+[consul-clients]
+machine2 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2202 ansible_ssh_user=vagrant ansible_password=vagrant
+machine3 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2203 ansible_ssh_user=vagrant ansible_password=vagrant
+
+[consul-servers:vars]
+ansible_password=vagrant
+consul_server_ip=192.168.99.101
+
+[consul-clients:vars]
+ansible_password=vagrant
+consul_server_ip=192.168.99.101

@@ -1,8 +1,18 @@
 ---
 - hosts: all
-  gather_facts: yes
+  #gather_facts: yes
   #become: yes
   vars:
   tasks:
     - name: Test shell
-      win_shell: Write-Host "Hello"
+      win_shell: |
+        Write-Host "Hello"
+        Write-Host "Hello World"
+      register: result
+
+    - name: Display Output
+      debug: msg={{ result }}
+
+    - name: Display Output
+      debug:
+        msg: "{{result.stdout_lines}}"
