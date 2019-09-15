@@ -1,0 +1,29 @@
+---
+- name: Create directory [/usr/local/etc/consul]
+  file:
+    path: /usr/local/etc/consul
+    state: directory
+- name: Create server config file
+  template:
+    src: ./templates/consul-client-config.json
+    dest: /usr/local/etc/consul/client_agent.json
+- name: Create server service file
+  template:
+    src: ./templates/consul-client.service
+    dest: /etc/systemd/system/consul.service
+- name: Start/Enable Consul Service
+  systemd:
+    name: consul
+    enabled: yes
+    daemon_reload: yes
+    state: restarted
+- name: Check Consul Service (is running)
+  systemd:
+    name: consul
+    state: started
+# - name: Output Consul Members
+#   command: /usr/local/bin/consul members
+#   register: consul_members
+
+# - debug:
+#     msg: "Output of consul members: {{ consul_members.stdout_lines }}"

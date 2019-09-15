@@ -15,6 +15,13 @@ for i in `vagrant global-status | grep virtualbox | awk '{ print $1 }'` ; do vag
 vagrant global-status --prune
 ```
 
+## Ansible Controller Prereqs
+
+```sh
+pip install ipython
+pip install netaddr
+```
+
 ## Links
 
 https://medium.com/@megawan/provisioning-vagrant-multi-machines-with-ansible-32e1809816c5

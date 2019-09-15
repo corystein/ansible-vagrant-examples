@@ -1,0 +1,26 @@
+{
+    "server": true,
+    "ui": true,
+    "node_name": "consul_s{{ play_hosts.index(inventory_hostname) }}",
+    "log_level": "DEBUG",
+    "datacenter": "dc1",
+    "domain": "consul",
+    "client_addr": "0.0.0.0",
+    "bind_addr": "0.0.0.0",
+    "advertise_addr": "{{ hostvars[inventory_hostname]['ansible_all_ipv4_addresses'][1] }}",
+    "data_dir": "/var/consul",
+    "enable_syslog": true,
+    "leave_on_terminate": true,
+    "rejoin_after_leave": true,
+    "enable_script_checks": true,
+    "dns_config": {
+        "enable_truncate": true,
+        "only_passing": true
+    },
+    "bootstrap_expect": 3,
+    "start_join": [
+        "{{ hostvars[groups['consul_servers'][0]]['ansible_all_ipv4_addresses'][1] }}",
+        "{{ hostvars[groups['consul_servers'][1]]['ansible_all_ipv4_addresses'][1] }}",
+        "{{ hostvars[groups['consul_servers'][2]]['ansible_all_ipv4_addresses'][1] }}"
+    ]
+}

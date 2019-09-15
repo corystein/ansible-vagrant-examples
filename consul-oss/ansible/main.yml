@@ -1,58 +1,106 @@
 ---
 - name: Install Consul
   hosts: all
-  vars:
-    CONSUL_VERSION: 1.6.1
+  become: yes
   tasks:
-    - name: Run the equivalent of "apt-get update" as a separate step
-      apt:
-        update_cache: yes
-    - name: Install unzip
-      apt:
-        name: unzip
-        state: present
-    - name: Download consul bianry and extact
-      unarchive:
-        src: https://releases.hashicorp.com/consul/{{ CONSUL_VERSION }}/consul_{{ CONSUL_VERSION }}_linux_amd64.zip
-        dest: /usr/local/bin
-        remote_src: yes
-    - name: Create Unit file
-      template:
-        src: ../consul.service
-        dest: /lib/systemd/system/consul.service
-        mode: 644
-      #notify:
-      #  - reload systemctl
-    - name: Enable and relaod consul service
-      systemd:
-        name: consul
-        enabled: yes
-        daemon_reload: yes
-    - name: Create directory
-      file:
-        path: /etc/systemd/system/consul.d
-        state: directory
+    - include: 01_Download_Binary.yml
 
-- name: Install Consul Server Tasks
-  hosts: consul-servers
+- name: Install Consul
+  hosts: consul_servers
+  become: yes
   tasks:
-    - name: Create server config file
-      template:
-        src: ./templates/server-config.json
-        dest: /etc/systemd/system/consul.d/init.json
-    - name: Start consul service
-      systemd:
-        name: consul
-        state: started
+    - include: 02_Install_Consul_Server_Nodes.yml
 
-- name: Install Consul Client Tasks
-  hosts: consul-clients
+- name: Install Consul
+  hosts: consul_clients
+  become: yes
   tasks:
-    - name: Create client config file
-      template:
-        src: ./templates/client-config.json
-        dest: /etc/systemd/system/consul.d/init.json
-    - name: Start consul service
-      systemd:
-        name: consul
-        state: started
+    - include: 03_Install_Consul_Client_Nodes.yml
+#     - name: Run the equivalent of "apt-get update" as a separate step
+#       apt:
+#         update_cache: yes
+#         force_apt_get: true
+#     - name: Install unzip
+#       apt:
+#         name: unzip
+#         force_apt_get: true
+#         state: present
+#     - name: Get latest Consul version
+#       uri:
+#         url: "{{ CHECKPOINT_URL }}/consul"
+#       register: result
+#     - name: Set Consul Current Version
+#       set_fact:
+#         CONSUL_VERSION: "{{ result.json.current_version }}"
+#     - name: Display Consul Latest Version
+#       debug:
+#         msg: "{{ CONSUL_VERSION }}"
+#     - name: Download consul bianry and extact
+#       unarchive:
+#         src: https://releases.hashicorp.com/consul/{{ CONSUL_VERSION }}/consul_{{ CONSUL_VERSION }}_linux_amd64.zip
+#         dest: /usr/local/bin
+#         mode: 650
+#         remote_src: yes
+#     - name: Create directory [/etc/consul.d/scripts]
+#       file:
+#         path: /etc/consul.d/scripts
+#         state: directory
+#     - name: Create directory [/var/consul]
+#       file:
+#         path: /var/consul
+#         state: directory
+
+#     - name: Create Consul Secret
+#       shell: consul keygen
+#       register: result
+#       #when: inventory_hostname != groups['consul_servers']
+#       run_once: true
+
+#     - name: Display Consul Keygen Output
+#       debug:
+#         msg: "{{ result.stdout }}"
+#     - name: Set Consul Secret
+#       set_fact:
+#         CONSUL_SECRET: "{{ result.stdout }}"
+
+#     - name: Create Config File
+#       template:
+#         src: ./templates/consul-server-config.json
+#         dest: /etc/consul.d/config.json
+#     - name: Create Unit file
+#       template:
+#         src: ./templates/consul-server.service
+#         dest: /lib/systemd/system/consul.service
+#         mode: 644
+#     - name: Enable and relaod consul service
+#       systemd:
+#         name: consul
+#         enabled: yes
+#         daemon_reload: yes
+#     - name: Create directory
+#       file:
+#         path: /etc/systemd/system/consul.d
+#         state: directory
+
+# - name: Install Consul Server Tasks
+#   hosts: consul_servers
+#   tasks:
+#     - name: Create server config file
+#       template:
+#         src: ./templates/server-config.json
+#         dest: /etc/systemd/system/consul.d/init.json
+#     - name: Start consul service
+#       systemd:
+#         name: consul
+#         state: started
+# - name: Install Consul Client Tasks
+#   hosts: consul_clients
+#   tasks:
+#     - name: Create client config file
+#       template:
+#         src: ./templates/client-config.json
+#         dest: /etc/systemd/system/consul.d/init.json
+#     - name: Start consul service
+#       systemd:
+#         name: consul
+#         state: started

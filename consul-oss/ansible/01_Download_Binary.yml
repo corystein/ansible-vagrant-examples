@@ -1,0 +1,31 @@
+---
+- name: Run the equivalent of "apt-get update" as a separate step
+  apt:
+    update_cache: yes
+    force_apt_get: true
+- name: Install unzip
+  apt:
+    name: unzip
+    force_apt_get: true
+    state: present
+- name: Get latest Consul version
+  uri:
+    url: "{{ CHECKPOINT_URL }}/consul"
+  register: result
+- name: Set Consul Current Version
+  set_fact:
+    CONSUL_VERSION: "{{ result.json.current_version }}"
+- name: Display Consul Latest Version
+  debug:
+    msg: "{{ CONSUL_VERSION }}"
+- name: Check if consul binary already exists
+  stat:
+    path: /usr/local/bin/consul
+  register: consul_binary
+- name: Download consul bianry and extact
+  unarchive:
+    src: https://releases.hashicorp.com/consul/{{ CONSUL_VERSION }}/consul_{{ CONSUL_VERSION }}_linux_amd64.zip
+    dest: /usr/local/bin
+    mode: 650
+    remote_src: yes
+  when: not consul_binary.stat.exists

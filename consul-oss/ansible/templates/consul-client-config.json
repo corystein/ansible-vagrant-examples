@@ -1,0 +1,5 @@
+{
+    "advertise_addr": "{{ hostvars[inventory_hostname]['ansible_all_ipv4_addresses'][1] }}",
+    "retry_join": ["{{ hostvars[groups['consul_servers'][0]]['ansible_all_ipv4_addresses'][1] }}"],
+    "data_dir": "/var/consul"
+}
